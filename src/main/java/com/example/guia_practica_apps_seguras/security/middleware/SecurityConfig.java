@@ -4,24 +4,29 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/v3/api-docs/",
-                    "/swagger-ui/",
-                    "/swagger-ui.html",
-                    "/api/crypto/**" 
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .csrf(csrf -> csrf.disable());
-
+          .csrf(csrf -> csrf.disable())
+          .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+               "/swagger-ui/**",
+               "/v3/api-docs/**",
+               "/api/crypto/**"
+            ).permitAll()
+            .anyRequest().authenticated()
+          )
+          .httpBasic(httpBasic -> {}); // Use lambda to configure httpBasic if needed
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/swagger-ui/**", "/v3/api-docs/**");
     }
 }
